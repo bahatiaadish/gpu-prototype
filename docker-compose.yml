@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  gpu-cloud-api:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=mysql+pymysql://gpu_cloud:password@db:3306/gpu_cloud_platform
+      - REDIS_URL=redis://redis:6379/0
+      - FLASK_DEBUG=false
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./config:/app/config
+      - /var/run/libvirt:/var/run/libvirt
+      - /var/lib/libvirt:/var/lib/libvirt
+
+  db:
+    image: mariadb:10.9
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=gpu_cloud_platform
+      - MYSQL_USER=gpu_cloud
+      - MYSQL_PASSWORD=password
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  websocket-server:
+    build: .
+    command: python -c "import asyncio; from vm_manager import start_reconciliation_loop; from vm_manager import LibvirtManager; from messaging import RedisManager; asyncio.run(start_reconciliation_loop(LibvirtManager(), RedisManager()))"
+    ports:
+      - "8765:8765"
+    depends_on:
+      - redis
+      - db
+    volumes:
+      - /var/run/libvirt:/var/run/libvirt
+
+volumes:
+  db_data:
+  redis_data:

@@ -1,0 +1,56 @@
+
+cpu_cores: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+cpu_overcommit_ratio: 2.0
+
+total_memory_gb: 128
+memory_overcommit_ratio: 1.5
+
+hugepages_1g: 32
+hugepages_2m: 1024
+
+gpu_devices:
+  - name: "NVIDIA RTX 4090"
+    domain: "0x0000"
+    bus: "0x01"
+    slot: "0x00"
+    function: "0x0"
+    vendor_id: "10de"
+    device_id: "2684"
+  - name: "NVIDIA RTX 4080"
+    domain: "0x0000"
+    bus: "0x02"
+    slot: "0x00"
+    function: "0x0"
+    vendor_id: "10de"
+    device_id: "2704"
+
+network_interfaces:
+  - name: "br-tenant"
+    type: "bridge"
+    physical_interface: "ens3"
+    mtu: 1500
+  - name: "br-public"
+    type: "bridge"
+    physical_interface: "ens4"
+    mtu: 1500
+
+numa_nodes:
+  - id: 0
+    cpu_cores: [0, 1, 2, 3, 4, 5, 6, 7]
+    memory_gb: 64
+    gpu_devices: [0]
+  - id: 1
+    cpu_cores: [8, 9, 10, 11, 12, 13, 14, 15]
+    memory_gb: 64
+    gpu_devices: [1]
+
+storage:
+  vm_images_path: "/var/lib/libvirt/images"
+  disk_overcommit_ratio: 3.0
+  default_disk_format: "qcow2"
+  
+performance:
+  enable_cpu_pinning: true
+  enable_hugepages: true
+  enable_numa_topology: true
+  enable_sr_iov: false
